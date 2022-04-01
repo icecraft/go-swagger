@@ -21,6 +21,7 @@ description:         Please see the README on GitHub at <https://github.com/gith
 
 dependencies:
 - base >= 4.7 && < 5
+- parsec >= 3.1.14.0 
 
 library:
   source-dirs: src
@@ -46,3 +47,6 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - go-swagger
+    - hspec >= 2.7
+    - hspec-parsec >= 0
+    - hspec-expectations >= 0.8.2
