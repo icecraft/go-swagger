@@ -9,14 +9,6 @@ import Types
 import PCombinators
 
 
-p_nothing :: Parser ()
-p_nothing = return ()
-
-
-p_nothing_s :: Parser String
-p_nothing_s = return ""
-
-
 p_comment :: Parser String 
 p_comment = do 
     spaces
@@ -39,16 +31,28 @@ p_non_empty_string = do
     return val 
 
 
--- 支持任意顺序的 tag
 p_tag :: Parser Tag 
 p_tag = do 
     spaces 
-    char '`'
+    key <- many (noneOf ":")
+    string ":\""
+    value <- many (noneOf "\"")
+    char '"'
     spaces
-    string "json:"
-    jsonTag <- many (noneOf " `")
+    return Tag {tagKey=key, tagValue=value}
+
+
+p_tags :: Parser Tags 
+p_tags = do 
+    spaces 
     char '`'
-    return Tag {json=jsonTag}
+    tags <- manyTill p_tag (char '`')
+    return Tags {
+                    jsonTag = extractTag "json" tags
+                  , bsonTag = extractTag "bson" tags
+                  , bindingTag = extractTag "binding" tags
+                  , formTag = extractTag "form" tags 
+                }
 
 
 p_field :: Parser Field 
@@ -56,10 +60,10 @@ p_field = do
     comment <- p_comments
     name <- p_non_empty_string 
     kind <- p_non_empty_string 
-    tag <- p_tag 
+    tags <- p_tags 
     many (noneOf "\n")
     newline
-    return Field{fname= name, fdesc=comment, fkind=kind, ftag=tag, finfo=SourceInfo{line=0, fileName=""}}
+    return Field{fname= name, fdesc=comment, fkind=kind, ftag=tags, finfo=SourceInfo{line=0, fileName=""}}
 
 
 p_struct :: Parser Struct 

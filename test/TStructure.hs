@@ -31,16 +31,23 @@ spec_p_non_empty_string = do
           Left e -> expectationFailure $ "expected: " ++ "name" ++ "\nbut parsing failed with error:\n" ++ show e
           Right val -> shouldBe val ["abc", "efg"]
 
-{-
+
 spec_p_tag :: Spec
 spec_p_tag = do
     describe "tag" $ do 
       it "[p] just json tag" $ do 
-        case parse p_tag "" "`json:\"name\"`" of 
+        case parse p_tag "" "json:\"name\"" of 
           Left e -> expectationFailure $ "expected: " ++ "name" ++ "\nbut parsing failed with error:\n" ++ show e
-          Right val -> shouldBe val Tag{json="name"}
+          Right val -> shouldBe val Tag{tagValue="name", tagKey="json"}
 
--}
+
+spec_p_tags :: Spec
+spec_p_tags = do
+    describe "tags" $ do 
+      it "[p] just json tag" $ do 
+        case parse p_tags "" " ` json:\"name\" bson:\"name\" `" of 
+          Left e -> expectationFailure $ "expected: " ++ "name" ++ "\nbut parsing failed with error:\n" ++ show e
+          Right val -> shouldBe val Tags{jsonTag="name", bsonTag="name", formTag="", bindingTag=""}
 
 
 spec_p_field :: Spec 
@@ -49,8 +56,13 @@ spec_p_field = do
     it "[p] field with last comment " $ do 
       case parse p_field " " " //just name \n Name string `json:\"name\"` \n extra_tail" of 
         Left e -> expectationFailure $ "parsing failed with error:\n" ++ show e
-        Right val -> shouldBe val Field{fname="Name", fkind="string", fdesc="just name ", ftag=Tag{json="\"name\""}, finfo=SourceInfo{line=0, fileName=""}}
-
+        Right val -> shouldBe val Field{
+                                        fname="Name", 
+                                        fkind="string", 
+                                        fdesc="just name ", 
+                                        ftag=Tags{jsonTag="name", bsonTag="", formTag="", bindingTag=""}, 
+                                        finfo=SourceInfo{line=0, fileName=""}
+                                      }
 
 
 spec_p_struct :: Spec 
@@ -62,6 +74,12 @@ spec_p_struct = do
         Right val -> shouldBe val Struct{
                                         sname="User",  
                                         sdesc="1for sth \n2for sth ", 
-                                        sfields= [Field{fname="ID", fkind="int64", fdesc="just id ", ftag=Tag{json="\"id\""}, finfo=SourceInfo{line=0, fileName=""} }],
+                                        sfields= [Field{
+                                                        fname="ID", 
+                                                        fkind="int64", 
+                                                        fdesc="just id ", 
+                                                        ftag=Tags{jsonTag="id", bsonTag="", formTag="", bindingTag=""}, 
+                                                        finfo=SourceInfo{line=0, fileName=""} }],
                                         sinfo=SourceInfo{line=0, fileName=""}}
+
 
