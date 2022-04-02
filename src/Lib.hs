@@ -4,3 +4,11 @@ module Lib
 
 someFunc :: IO ()
 someFunc = putStrLn "someFunc"
+
+
+orString :: String -> String -> String 
+orString a b = case len a of 
+                0 -> b 
+                _ -> a 
+
+
